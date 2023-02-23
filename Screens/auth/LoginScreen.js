@@ -23,6 +23,7 @@ export default function LoginScreen({ navigation }) {
   const [isShowKeyboard, setIsShowKeyboard] = useState(false);
   const [state, setState] = useState(initialState);
   const [showPassword, setShowPassword] = useState(true);
+
   const dispatch = useDispatch();
 
   const handleSubmit = () => {
@@ -181,7 +182,6 @@ const styles = StyleSheet.create({
     marginTop: 43,
     justifyContent: "center",
     alignItems: "center",
-    // marginHorizontal: 16,
   },
   buttonTitle: {
     color: "#FFFFFF",
@@ -201,12 +201,10 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#1B4371",
-
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     lineHeight: 19,
     textAlign: "center",
     marginTop: 16,
-    // marginBottom: 144,
   },
 });

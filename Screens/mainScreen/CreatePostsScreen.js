@@ -8,6 +8,10 @@ import * as Location from "expo-location";
 import { EvilIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 
+import { storage, db } from "../../firebase/config";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+
 const CreatePostScreen = ({ navigation }) => {
   const [camera, setCamera] = useState(null);
   const [photo, setPhoto] = useState("");
@@ -17,13 +21,33 @@ const CreatePostScreen = ({ navigation }) => {
     const location = await Location.getCurrentPositionAsync();
     // console.log("latitude", location.coords.latitude);
     // console.log("longitude", location.coords.longitude);
+    console.log("location", location);
+
     setPhoto(photo.uri);
     console.log("photo", photo);
   };
 
   const sendPhoto = () => {
+    uploadPhotoToServer();
     console.log("navigation", navigation);
     navigation.navigate("DefaultScreen", { photo });
+  };
+
+  const uploadPhotoToServer = async () => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+
+    const uniquePostId = uuidv4();
+
+    const storageReference = ref(storage, `postImage/${uniquePostId}`);
+    await uploadBytes(storageReference, file);
+    console.log("storageReference", storageReference);
+
+    const processedPhoto = await getDownloadURL(
+      ref(storage, `postImage/${uniquePostId}`)
+    );
+
+    console.log("processedPhoto", processedPhoto);
   };
 
   // useEffect(() => {
@@ -52,7 +76,6 @@ const CreatePostScreen = ({ navigation }) => {
         )}
         <TouchableOpacity style={styles.snapContainer} onPress={takePhoto}>
           <FontAwesome5 name="camera" size={24} color="#ffff" />
-          {/* <Text style={styles.snap}>SNAP</Text> */}
         </TouchableOpacity>
       </Camera>
       <Text style={styles.text}>Upload photo</Text>
@@ -109,6 +132,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     left: 10,
+    // right: 10,
+    // bottom: 10,
     borderColor: "#fff",
     borderWidth: 1,
   },
