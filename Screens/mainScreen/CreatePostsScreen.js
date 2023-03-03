@@ -1,26 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { useSelector } from "react-redux";
+import { View, Text, StyleSheet, Image, TextInput } from "react-native";
 import { Camera } from "expo-camera";
-import { TextInput, TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 import * as Location from "expo-location";
-
 import { EvilIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 
 import { storage, db } from "../../firebase/config";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc } from "firebase/firestore";
+
 import { v4 as uuidv4 } from "uuid";
 
 const CreatePostScreen = ({ navigation }) => {
   const [camera, setCamera] = useState(null);
-  const [photo, setPhoto] = useState("");
+  const [photo, setPhoto] = useState(null);
+  const [comment, setComment] = useState("");
+  const [location, setLocation] = useState(null);
+
+  const { userId, login } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
 
   const takePhoto = async () => {
+    console.log("comment", comment);
     const photo = await camera.takePictureAsync();
-    const location = await Location.getCurrentPositionAsync();
-    // console.log("latitude", location.coords.latitude);
-    // console.log("longitude", location.coords.longitude);
     console.log("location", location);
 
     setPhoto(photo.uri);
@@ -28,9 +46,23 @@ const CreatePostScreen = ({ navigation }) => {
   };
 
   const sendPhoto = () => {
-    uploadPhotoToServer();
+    uploadPostToServer();
     console.log("navigation", navigation);
-    navigation.navigate("DefaultScreen", { photo });
+    navigation.navigate("DefaultScreen");
+    setPhoto(null);
+  };
+
+  const uploadPostToServer = async () => {
+    const photo = await uploadPhotoToServer();
+
+    const docRef = await addDoc(collection(db, "posts"), {
+      photo,
+      comment,
+      location: location.coords,
+      userId,
+      login,
+    });
+    console.log("Document written with ID: ", docRef.id);
   };
 
   const uploadPhotoToServer = async () => {
@@ -47,21 +79,21 @@ const CreatePostScreen = ({ navigation }) => {
       ref(storage, `postImage/${uniquePostId}`)
     );
 
-    console.log("processedPhoto", processedPhoto);
+    return processedPhoto;
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     console.log("status", status);
-  //     if (status !== "granted") {
-  //       setErrorMsg("Permission to access location was denied");
-  //     }
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log("status", status);
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+      }
 
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     setLocation(location);
-  //   })();
-  // }, []);
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -80,7 +112,11 @@ const CreatePostScreen = ({ navigation }) => {
       </Camera>
       <Text style={styles.text}>Upload photo</Text>
       <View>
-        <TextInput style={styles.input} placeholder="Title..." />
+        <TextInput
+          style={styles.input}
+          placeholder="Title..."
+          onChangeText={setComment}
+        />
 
         <EvilIcons
           style={styles.icon}
@@ -114,12 +150,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 240,
   },
-  // snap: {
-  //   color: "#ffffff",
-  // },
 
   snapContainer: {
-    // borderColor: "#ffffff",
     borderWidth: 1,
     borderRadius: 50,
     backgroundColor: "#FFFFFF4C",
@@ -132,8 +164,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     left: 10,
-    // right: 10,
-    // bottom: 10,
     borderColor: "#fff",
     borderWidth: 1,
   },
@@ -155,7 +185,7 @@ const styles = StyleSheet.create({
 
     height: 50,
     borderBottomWidth: 1,
-    borderColor: "#E8E8E8",
+    borderBottomColor: "#E8E8E8",
   },
 
   icon: {

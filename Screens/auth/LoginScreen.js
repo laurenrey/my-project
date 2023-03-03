@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "flex-end",
-    // backgroundColor: "#fff",
   },
   image: {
     flex: 1,

@@ -21,13 +21,6 @@ export const authSignUpUser =
         password
       );
 
-      // dispatch(
-      //   authSlice.actions.updateUserProfile({
-      //     userId: user.uid,
-      //     login: user.displayName,
-      //   })
-      // );
-
       await updateProfile(user, {
         displayName: login,
       });

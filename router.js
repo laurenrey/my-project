@@ -50,6 +50,8 @@ export const useRoute = (isAuth) => {
       }}
     >
       <MainTab.Screen
+        name="PostsScreen"
+        component={PostScreen}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => (
@@ -68,10 +70,11 @@ export const useRoute = (isAuth) => {
             </TouchableOpacity>
           ),
         }}
-        name="PostsScreen"
-        component={PostScreen}
       />
+
       <MainTab.Screen
+        name="CreatePostsScreen"
+        component={CreatePostScreen}
         options={{
           //   headerShown: false,
           tabBarIcon: ({ focused, color, size }) => (
@@ -81,19 +84,11 @@ export const useRoute = (isAuth) => {
               color={focused ? "#FFFFFF" : "#212121"}
             />
           ),
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{ marginLeft: 16 }}
-              onPress={() => navigation.navigate("PostsScreen")}
-            >
-              <Ionicons name="arrow-back" size={24} color="#212121" />
-            </TouchableOpacity>
-          ),
         }}
-        name="CreatePostsScreen"
-        component={CreatePostScreen}
       />
       <MainTab.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
         options={{
           headerShown: false,
           tabBarIcon: ({ focused, color, size }) => (
@@ -104,8 +99,6 @@ export const useRoute = (isAuth) => {
             />
           ),
         }}
-        name="ProfileScreen"
-        component={ProfileScreen}
       />
     </MainTab.Navigator>
   );
